@@ -2,7 +2,7 @@
   "name": "AutoSemi",
   "displayName": "AutoSemi",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
   "vscode": "^1.103.0"
   },
@@ -10,7 +10,7 @@
     "Other"
   ],
 
-  "icon": "images/Logo.png",
+  "icon": "images/Logo_optimized.png",
 
   "main": "./out/extension.js",
   "activationEvents": [
