@@ -10,7 +10,7 @@
     "Other"
   ],
 
-  "icon": "https://raw.githubusercontent.com/MoayadAlshehry/AutoSemi/refs/heads/main/images/Logo.png",
+  "icon": "images/Logo.png",
 
   "main": "./out/extension.js",
   "activationEvents": [
