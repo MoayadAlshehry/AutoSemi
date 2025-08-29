@@ -10,7 +10,7 @@
     "Other"
   ],
 
-  "icon": "./src/images/logo.png",
+  "icon": "images/logo.png",
 
   "main": "./out/extension.js",
   "activationEvents": [
