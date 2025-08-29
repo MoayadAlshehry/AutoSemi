@@ -1,5 +1,5 @@
 # AutoSemi for VS Code
-![Logo](https://raw.githubusercontent.com/MoayadAlshehry/AutoSemi/refs/heads/main/images/Logo.png)
+<img src="images/screenshot.png" alt="Logo" width="300" height="200"/>
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 
 An intelligent Visual Studio Code extension that **automatically inserts semicolons** at the end of lines where they are needed. It saves time, reduces keystrokes, and helps prevent syntax errors.
