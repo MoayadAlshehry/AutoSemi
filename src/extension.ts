@@ -1,102 +1,310 @@
 import * as vscode from 'vscode';
+import * as babelParser from '@babel/parser';
 
-// This function is called when your extension is activated.
+// Cache parsers for better performance
+let jsParser: typeof babelParser;
+let javaParser: any;
+
+// Configuration interface
+interface AutoSemiConfig {
+    enabled: boolean;
+    languages: string[];
+    skipComments: boolean;
+    skipStrings: boolean;
+    debounceDelay: number;
+    enableForJavascript: boolean;
+    enableForTypescript: boolean;
+    enableForJava: boolean;
+    enableForCsharp: boolean;
+    enableForCpp: boolean;
+}
+
 export function activate(context: vscode.ExtensionContext) {
-
-    // A disposable to store our event listener.
-    let disposable = vscode.workspace.onDidChangeTextDocument(event => {
-        // Get the active text editor.
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return;
-        }
-
-        // Check if the change was a newline character being inserted.
-        const change = event.contentChanges[0];
-        // We only care about single-character changes that are newlines.
-        if (!change.text.includes('\n') || change.text.trim() !== '') {
-            return;
-        }
+    let lastTrigger = 0;
+    
+    const disposable = vscode.workspace.onDidChangeTextDocument(async event => {
+        const config = getConfiguration();
+        if (!config.enabled) return;
         
-        // The position *before* the newline was inserted.
-        const originalPosition = change.range.start;
-        const lineNumber = originalPosition.line;
-        const line = editor.document.lineAt(lineNumber);
-        const lineText = line.text.trim();
+        const now = Date.now();
+        if (now - lastTrigger < config.debounceDelay) return;
+        lastTrigger = now;
 
-        // If the line is empty or a comment, do nothing.
-        if (lineText.length === 0 || lineText.startsWith('//') || lineText.startsWith('*')) {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor || editor.document !== event.document || !event.contentChanges.length) {
             return;
         }
 
-        // Call our helper function to check if a semicolon is needed.
-        if (shouldInsertSemicolon(lineText, editor.document.languageId)) {
-            // Insert the semicolon at the end of the line.
-            // We use an edit builder to make the change.
+        const change = event.contentChanges[0];
+        if (change.text !== '\n' && change.text !== '\r\n') return;
+
+        const lineNumber = change.range.start.line;
+        const line = editor.document.lineAt(lineNumber);
+        
+        // Skip if in special context (comments, strings, etc.)
+        if (isInSpecialContext(editor.document, change.range.start, config)) {
+            return;
+        }
+
+        let lineText = line.text;
+        if (config.skipComments) {
+            lineText = removeComments(lineText, editor.document.languageId);
+        }
+
+        const trimmedLine = lineText.trim();
+        if (trimmedLine.length === 0) return;
+
+        // Check if language is enabled
+        if (!isLanguageEnabled(editor.document.languageId, config)) {
+            return;
+        }
+
+        if (await shouldInsertSemicolon(trimmedLine, editor.document.languageId, editor, lineNumber, config)) {
             editor.edit(editBuilder => {
                 const endOfLinePosition = new vscode.Position(lineNumber, line.range.end.character);
                 editBuilder.insert(endOfLinePosition, ';');
-            }, { undoStopBefore: false, undoStopAfter: false }); // Merges this edit with the user's newline action
+            }, { undoStopBefore: false, undoStopAfter: false });
         }
     });
 
     context.subscriptions.push(disposable);
+    
+    // Register configuration change listener
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration(e => {
+            if (e.affectsConfiguration('autoSemi')) {
+                // Reset cached configuration
+                cachedConfig = null;
+            }
+        })
+    );
+}
+
+// Cache configuration for performance
+let cachedConfig: AutoSemiConfig | null = null;
+
+function getConfiguration(): AutoSemiConfig {
+    if (cachedConfig) return cachedConfig;
+    
+    const config = vscode.workspace.getConfiguration('autoSemi');
+    cachedConfig = {
+        enabled: config.get<boolean>('enabled', true),
+        languages: config.get<string[]>('languages', ['javascript', 'typescript', 'java']),
+        skipComments: config.get<boolean>('skipComments', true),
+        skipStrings: config.get<boolean>('skipStrings', true),
+        debounceDelay: config.get<number>('debounceDelay', 50),
+        enableForJavascript: config.get<boolean>('enableForJavascript', true),
+        enableForTypescript: config.get<boolean>('enableForTypescript', true),
+        enableForJava: config.get<boolean>('enableForJava', true),
+        enableForCsharp: config.get<boolean>('enableForCsharp', false),
+        enableForCpp: config.get<boolean>('enableForCpp', false),
+    };
+    
+    return cachedConfig;
+}
+
+function isLanguageEnabled(languageId: string, config: AutoSemiConfig): boolean {
+    if (!config.languages.includes(languageId)) return false;
+    
+    switch (languageId) {
+        case 'javascript': return config.enableForJavascript;
+        case 'typescript': return config.enableForTypescript;
+        case 'java': return config.enableForJava;
+        case 'csharp': return config.enableForCsharp;
+        case 'cpp': return config.enableForCpp;
+        default: return false;
+    }
+}
+
+function isInSpecialContext(document: vscode.TextDocument, position: vscode.Position, config: AutoSemiConfig): boolean {
+    if (!config.skipComments && !config.skipStrings) return false;
+    
+    const text = document.getText();
+    const offset = document.offsetAt(position);
+    
+    // Check if we're inside a string or template literal
+    if (config.skipStrings) {
+        const previousText = text.substring(0, offset);
+        const openDoubleQuotes = (previousText.match(/"/g) || []).length % 2 === 1;
+        const openSingleQuotes = (previousText.match(/'/g) || []).length % 2 === 1;
+        const openTemplate = (previousText.match(/`/g) || []).length % 2 === 1;
+        
+        if (openDoubleQuotes || openSingleQuotes || openTemplate) {
+            return true;
+        }
+    }
+    
+    // Check if we're inside a comment
+    if (config.skipComments) {
+        const lineText = document.lineAt(position.line).text;
+        const commentMatch = /(\/\/|\/\*|\*)/.exec(lineText);
+        if (commentMatch && commentMatch.index < position.character) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+function removeComments(lineText: string, languageId: string): string {
+    // Remove line comments
+    if (languageId === 'javascript' || languageId === 'typescript' || languageId === 'java') {
+        return lineText.replace(/\/\/.*$/, '').replace(/\/\*.*\*\//, '');
+    }
+    return lineText;
 }
 
 /**
- * Determines whether a semicolon should be inserted based on the line's content and language context.
- * This is the "smart" part of the extension.
- * @param lineText The trimmed text of the line to analyze.
- * @param languageId The language ID (e.g., 'javascript', 'java').
- * @returns {boolean} True if a semicolon should be inserted.
+ * Router for language-specific semicolon logic.
  */
-function shouldInsertSemicolon(lineText: string, languageId: string): boolean {
-    // 1. Don't add a semicolon if the line already has one.
+async function shouldInsertSemicolon(
+    lineText: string,
+    languageId: string,
+    editor: vscode.TextEditor,
+    lineNumber: number,
+    config: AutoSemiConfig
+): Promise<boolean> {
     if (lineText.endsWith(';')) {
         return false;
     }
 
-    // 2. Don't add a semicolon if the line ends with an opening brace or other block-starting character.
-    const blockStarters = ['{', '(', '[', ',', '=>'];
-    if (blockStarters.some(starter => lineText.endsWith(starter))) {
-        return false;
-    }
+    // Get full document up to current line for parsing
+    const fullText = editor.document.getText(new vscode.Range(0, 0, lineNumber + 1, lineText.length));
 
-    // 3. Don't add a semicolon after control structure keywords.
-    // This regex looks for keywords at the start of the line, possibly followed by '('.
-    const controlStructureRegex = /^\s*(if|else|for|while|switch|try|catch|finally|do|class|interface|enum|function|\b(public|private|protected|static|final|abstract)\s.*)\b.*$/;
-    if (controlStructureRegex.test(lineText)) {
-        // A special case for `else if`
-        if (lineText.startsWith('else if')) {
+    switch (languageId) {
+        case 'javascript':
+        case 'typescript':
+            return shouldInsertSemicolonForJS(lineText, fullText);
+        case 'java':
+            return await shouldInsertSemicolonForJava(lineText, fullText);
+        case 'csharp':
+            return shouldInsertSemicolonForCSharp(lineText, fullText);
+        case 'cpp':
+            return shouldInsertSemicolonForCpp(lineText, fullText);
+        default:
             return false;
-        }
-        // A simple `else` should also not have a semicolon
-        if (lineText.trim() === 'else') {
-            return false;
-        }
-        // Avoid adding semicolon on function declarations or class definitions
-        if (lineText.includes('{')) {
-            return false;
-        }
     }
-    
-    // 4. A more robust check for control structures not ending in a brace
-    const endsWithControl = /\)\s*$/.test(lineText); // e.g. if (condition)
-    const startsWithControl = /^(if|for|while)\s*\(/.test(lineText);
-    if(startsWithControl && endsWithControl) {
-        return false;
-    }
-
-    // 5. Check for multi-line constructs (e.g., return statements, variable declarations).
-    // This is a simplified check. A more advanced version might use a full parser.
-    const lineContinuationOperators = ['+', '-', '*', '/', '%', '=', '==', '===', '!=', '!==', '>', '<', '>=', '<=', '&&', '||', '??'];
-    if (lineContinuationOperators.some(op => lineText.endsWith(op))) {
-        return false;
-    }
-
-    // If none of the above conditions are met, we can safely insert a semicolon.
-    return true;
 }
 
-// This function is called when your extension is deactivated.
+/**
+ * JavaScript/TypeScript semicolon rules using Babel.
+ */
+function shouldInsertSemicolonForJS(lineText: string, fullText: string): boolean {
+    // Patterns that should not end with semicolon
+    const noSemiPatterns = [
+        /^(\s*)(if|for|while|switch|try|catch|finally|function|class|interface|enum|export|import)\b/,
+        /^.*\{$/,
+        /^.*\}$/,
+        /^.*\([^)]*$/, // Unclosed parentheses
+        /^.*\[[^\]]*$/, // Unclosed brackets
+        /^.*`[^`]*$/, // Unclosed template literal
+        /^.*\/\/.*$/, // Line comments
+        /^.*\/\*.*$/, // Block comments start
+    ];
+
+    if (noSemiPatterns.some(pattern => pattern.test(lineText))) {
+        return false;
+    }
+
+    // Patterns that should end with semicolon
+    const needsSemiPatterns = [
+        /^\s*(return|throw|break|continue|yield|debugger)\b/,
+        /^\s*(const|let|var)\s+\w+/,
+        /^.*[^={}]\s*=>\s*[^{]*$/, // Arrow function without block
+        /^.*[^!]==?[^=].*$/, // Assignments and comparisons
+        /^.*[+\-*/%&|^]=$/, // Operation assignments
+        /^\s*\w+\([^)]*\)$/, // Function calls
+        /^\s*[a-zA-Z_$][\w$]*(\.[a-zA-Z_$][\w$]*)*\s*$/, // Property access
+    ];
+
+    return needsSemiPatterns.some(pattern => pattern.test(lineText));
+}
+
+/**
+ * Java semicolon rules using java-parser.
+ */
+async function shouldInsertSemicolonForJava(lineText: string, fullText: string): Promise<boolean> {
+    // Fast heuristics
+    const noSemiPatterns = [
+        /^(\s*)(if|else|for|while|switch|try|catch|finally|class|interface|enum|public|private|protected|package|import)\b/,
+        /^.*\{$/,
+        /^.*\}$/,
+        /^.*\([^)]*$/, // Unclosed parentheses
+        /^.*\[[^\]]*$/, // Unclosed brackets
+    ];
+
+    if (noSemiPatterns.some(pattern => pattern.test(lineText))) {
+        return false;
+    }
+
+    // Patterns that need semicolons
+    const needsSemiPatterns = [
+        /^\s*(return|break|continue|throw)\b/,
+        /^\s*(int|long|double|float|boolean|char|byte|short|var)\s+\w+/,
+        /^\s*\w+\s*=\s*[^;]*$/, // Assignments
+        /^\s*\w+\([^)]*\)$/, // Method calls
+        /^\s*[a-zA-Z_$][\w$]*(\.[a-zA-Z_$][\w$]*)*\s*$/, // Property access
+    ];
+
+    return needsSemiPatterns.some(pattern => pattern.test(lineText));
+}
+
+/**
+ * C# semicolon rules (heuristic-based).
+ */
+function shouldInsertSemicolonForCSharp(lineText: string, fullText: string): boolean {
+    // Patterns that should not end with semicolon
+    const noSemiPatterns = [
+        /^(\s*)(if|else|for|while|switch|try|catch|finally|class|interface|enum|public|private|protected|namespace|using)\b/,
+        /^.*\{$/,
+        /^.*\}$/,
+        /^.*\([^)]*$/, // Unclosed parentheses
+        /^.*\[[^\]]*$/, // Unclosed brackets
+    ];
+
+    if (noSemiPatterns.some(pattern => pattern.test(lineText))) {
+        return false;
+    }
+
+    // Patterns that need semicolons
+    const needsSemiPatterns = [
+        /^\s*(return|break|continue|throw)\b/,
+        /^\s*(int|long|double|float|bool|char|byte|short|var)\s+\w+/,
+        /^\s*\w+\s*=\s*[^;]*$/, // Assignments
+        /^\s*\w+\([^)]*\)$/, // Method calls
+        /^\s*[a-zA-Z_][\w]*(\.[a-zA-Z_][\w]*)*\s*$/, // Property access
+    ];
+
+    return needsSemiPatterns.some(pattern => pattern.test(lineText));
+}
+
+/**
+ * C++ semicolon rules (heuristic-based).
+ */
+function shouldInsertSemicolonForCpp(lineText: string, fullText: string): boolean {
+    // Patterns that should not end with semicolon
+    const noSemiPatterns = [
+        /^(\s*)(if|else|for|while|switch|try|catch|finally|class|struct|enum|public|private|protected|namespace|using|#include|#define)\b/,
+        /^.*\{$/,
+        /^.*\}$/,
+        /^.*\([^)]*$/, // Unclosed parentheses
+        /^.*\[[^\]]*$/, // Unclosed brackets
+    ];
+
+    if (noSemiPatterns.some(pattern => pattern.test(lineText))) {
+        return false;
+    }
+
+    // Patterns that need semicolons
+    const needsSemiPatterns = [
+        /^\s*(return|break|continue|throw)\b/,
+        /^\s*(int|long|double|float|bool|char|short|auto)\s+\w+/,
+        /^\s*\w+\s*=\s*[^;]*$/, // Assignments
+        /^\s*\w+\([^)]*\)$/, // Function calls
+        /^\s*[a-zA-Z_][\w]*(\.[a-zA-Z_][\w]*)*\s*$/, // Property access
+    ];
+
+    return needsSemiPatterns.some(pattern => pattern.test(lineText));
+}
+
 export function deactivate() {}

@@ -1,33 +1,105 @@
 {
   "name": "AutoSemi",
   "displayName": "AutoSemi",
-  "description": "",
-  "version": "0.0.2",
+  "description": "Automatically inserts semicolons at the end of lines as you type",
+  "version": "0.1.1",
   "engines": {
-  "vscode": "^1.103.0"
+    "vscode": "^1.103.0"
   },
   "categories": [
+    "Formatters",
     "Other"
   ],
-
   "icon": "images/Logo_optimized.png",
-
   "main": "./out/extension.js",
   "activationEvents": [
     "onLanguage:javascript",
     "onLanguage:typescript",
-    "onLanguage:java"
+    "onLanguage:java",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact",
+    "onLanguage:csharp",
+    "onLanguage:cpp"
   ],
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "test": "vscode-test",
+    "test-compile": "tsc -p ./ --outDir out-test"
   },
   "publisher": "Moayad",
   "repository": {
     "type": "git",
     "url": "https://github.com/MoayadAlshehry/AutoSemi.git"
   },
+  "dependencies": {
+    "@babel/parser": "^7.23.0",
+    "java-parser": "^2.0.0"
+  },
   "devDependencies": {
+    "@types/vscode": "^1.103.0",
+    "@types/node": "^20.0.0",
+    "@types/mocha": "^10.0.0",
+    "typescript": "^5.1.6",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.0"
+  },
+  "contributes": {
+    "configuration": {
+      "title": "AutoSemi",
+      "properties": {
+        "autoSemi.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable the AutoSemi extension"
+        },
+        "autoSemi.languages": {
+          "type": "array",
+          "default": ["javascript", "typescript", "java"],
+          "description": "Languages to apply auto semicolon insertion to"
+        },
+        "autoSemi.skipComments": {
+          "type": "boolean",
+          "default": true,
+          "description": "Skip semicolon insertion in comments"
+        },
+        "autoSemi.skipStrings": {
+          "type": "boolean",
+          "default": true,
+          "description": "Skip semicolon insertion inside strings"
+        },
+        "autoSemi.debounceDelay": {
+          "type": "number",
+          "default": 50,
+          "description": "Debounce delay in milliseconds to prevent excessive parsing"
+        },
+        "autoSemi.enableForJavascript": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable for JavaScript files"
+        },
+        "autoSemi.enableForTypescript": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable for TypeScript files"
+        },
+        "autoSemi.enableForJava": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable for Java files"
+        },
+        "autoSemi.enableForCsharp": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable for C# files"
+        },
+        "autoSemi.enableForCpp": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable for C++ files"
+        }
+      }
+    }
   }
 }
