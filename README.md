@@ -1,91 +1,94 @@
-# AutoSemi for VS Code
+# AutoSemi
 
-<img src="https://raw.githubusercontent.com/MoayadAlshehry/AutoSemi/refs/heads/main/images/Logo.png" alt="Logo" width="200" height="200"/>
+<p align="center">
+  <img src="images/Logo_optimized.png" alt="AutoSemi Logo" width="120">
+  <br>
+  <strong>Automatically add semicolons as you type</strong>
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+<p align="center">
+  <a href="https://marketplace.visualstudio.com/items?itemName=Moayad.AutoSemi">
+    <img src="https://img.shields.io/badge/VS%20Code-Extension-007ACC" alt="VS Code Extension">
+  </a>
+  <a href="https://github.com/MoayadAlshehry/AutoSemi/releases">
+    <img src="https://img.shields.io/badge/version-0.1.1-4DC71F" alt="Version 0.1.1">
+  </a>
+</p>
 
-An intelligent Visual Studio Code extension that **automatically inserts semicolons** at the end of lines where they are needed. It saves time, reduces keystrokes, and helps prevent syntax errors.
+## ✨ What Does It Do?
+
+AutoSemi automatically places semicolons at the end of your lines when you press Enter. No more forgetting semicolons or going back to add them!
+
+**Just type your code and press Enter → AutoSemi does the rest** 🎯
+
+## 🌟 Features
+
+- **Smart Detection**: Knows when to add semicolons and when to skip
+- **Multi-Language**: Works with JavaScript, TypeScript, Java, and more
+- **Fast & Light**: Doesn't slow down your editor
+- **Configurable**: Choose which languages to enable
+
+## 🚀 How to Use
+
+1. **Install** the extension from VS Code Marketplace
+2. **Start coding** as you normally would
+3. **Press Enter** after typing a line
+4. **Watch** as AutoSemi automatically adds the semicolon ✅
+
+That's it! No setup needed – it just works.
+
+## 📋 Supported Languages
+
+| Language | Status |
+|----------|---------|
+| JavaScript | ✅ Perfect |
+| TypeScript | ✅ Perfect |
+| Java | ✅ Great |
+| C# | ⚡ Good |
+| C++ | ⚡ Good |
+
+## ⚙️ Settings (Optional)
+
+You can customize AutoSemi in VS Code settings:
+
+- Turn it on/off for specific languages
+- Adjust how fast it responds
+- Choose to skip comments and strings
+
+## 🎯 Examples
+
+**Before pressing Enter:**
+```javascript
+const name = "John"
+console.log("Hello")
+```
+
+**After pressing Enter:**
+```javascript
+const name = "John";
+console.log("Hello");
+```
+
+## 📦 Installation
+
+1. Open VS Code
+2. Press `Ctrl+P` (or `Cmd+P` on Mac)
+3. Type `ext install Moayad.AutoSemi`
+4. Press Enter and enjoy!
+
+## 💖 Support
+
+If you love AutoSemi, please:
+- ⭐ **Star** the repository on GitHub
+- 🐛 **Report** any issues you find
+- 💡 **Suggest** new features
 
 ---
 
-## ✨ Features
+<p align="center">
+  Made with ❤️ for developers who forget semicolons
+</p>
 
-- **Automatic Semicolon Insertion**  
-  Adds a semicolon when you press `Enter` on a line that requires one.
-
-- **Intelligent and Context-Aware**  
-  Analyzes code to determine whether a semicolon is syntactically correct.
-
-- **Avoids Common Pitfalls**  
-  Skips semicolons where they would be invalid, such as:
-  - Control structures (`if`, `for`, `while`, `switch`, etc.)
-  - Function, class, or interface declarations
-  - Lines ending in `{`, `(`, `[`
-  - Empty lines or comments
-
-- **Multi-Language Support**  
-  Works with **Java**, **JavaScript**, and **TypeScript**.
-
-- **Seamless Experience**  
-  Runs silently in the background with **no configuration required**.
-
----
-
-## ⚙️ How It Works
-
-The extension listens for text changes in supported file types.  
-When a newline is inserted, it analyzes the **preceding line of code**.
-
-It will **NOT** insert a semicolon if the line:
-
-- Already ends with `;`
-- Is empty or contains only whitespace
-- Is a single-line (`//`) or multi-line (`/* ... */`) comment
-- Ends with `{`, `(`, `[`
-- Is a control structure like `if (...)`, `for (...)`, `while (...)`
-- Is a `class`, `interface`, `enum`, or `function` declaration
-- Ends with a comma `,`, an arrow `=>`, or an operator (`+`, `&&`, etc.) indicating continuation
-
-✅ If none of these conditions apply, a semicolon is automatically inserted.
-
----
-
-## 📚 Supported Languages
-
-- Java  
-- JavaScript  
-- TypeScript  
-
----
-
-## 🔧 Installation
-
-1. Open **Visual Studio Code**.
-2. Go to the **Extensions** view (`Ctrl+Shift+X`).
-3. Search for **Smart Semicolon**.
-4. Click **Install**.
-5. Reload VS Code if prompted.
-
----
-
-## ⚡ Configuration
-
-No configuration needed — works **out of the box**.
-
----
-
-## 🤝 Contributing
-
-Found a bug or have a suggestion? Contributions are welcome!  
-
-- Open an issue on the GitHub repository.
-- When reporting, please include:
-  - The language you were using
-  - A minimal code snippet showing the issue
-  - The expected vs. actual behavior
-
----
-
-## 📄 License
-
-Licensed under the [MIT License](LICENSE.md).
+<p align="center">
+  <sub>Because sometimes, the smallest things make the biggest difference</sub>
+</p>
