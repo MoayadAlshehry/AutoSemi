@@ -41,11 +41,11 @@ That's it! No setup needed – it just works.
 
 | Language | Status |
 |----------|---------|
-| JavaScript | ✅ Perfect |
-| TypeScript | ✅ Perfect |
-| Java | ✅ Great |
-| C# | ⚡ Good |
-| C++ | ⚡ Good |
+| JavaScript | ✅ |
+| TypeScript | ✅ |
+| Java | ✅ |
+| C# | ✅ |
+| C++ | ✅ |
 
 ## ⚙️ Settings (Optional)
 
