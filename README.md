@@ -41,9 +41,9 @@ That's it! No setup needed – it just works.
 
 | Language | Status |
 |----------|---------|
+| Java | ✅ |
 | JavaScript | ✅ |
 | TypeScript | ✅ |
-| Java | ✅ |
 | C# | ✅ |
 | C++ | ✅ |
 
