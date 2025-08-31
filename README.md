@@ -11,7 +11,7 @@
     <img src="https://img.shields.io/badge/VS%20Code-Extension-007ACC" alt="VS Code Extension">
   </a>
   <a href="https://github.com/MoayadAlshehry/AutoSemi/releases">
-    <img src="https://img.shields.io/badge/version-0.1.3-4DC71F" alt="Version 0.1.3">
+    <img src="https://img.shields.io/badge/version-0.1.4-4DC71F" alt="Version 0.1.4">
   </a>
 </p>
 
