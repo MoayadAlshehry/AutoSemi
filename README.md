@@ -12,6 +12,8 @@ const project = "AutoSemi"  // Press Enter
 const project = "AutoSemi";
 ```
 
+![Before and after editing example](docs/brand/project-evidence.png)
+
 ## What it does
 
 - Completes supported statements in JavaScript, TypeScript and Java.
