@@ -1,6 +1,8 @@
 # AutoSemi
 
-**A small editing convenience, shipped as a VS Code extension.**
+![AutoSemi — Developer productivity](docs/brand/project-header.png)
+
+**Routine semicolon insertion, built into your coding workflow.**
 
 AutoSemi adds a semicolon to a completed statement when you press Enter. It has **200+ installs** on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Moayad.AutoSemi) as of October 2026.
 
