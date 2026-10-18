@@ -1,94 +1,54 @@
 # AutoSemi
 
-<p align="center">
-  <img src="images/Logo_optimized.png" alt="AutoSemi Logo" width="120">
-  <br>
-  <strong>Automatically add semicolons as you type</strong>
-</p>
+**A small editing convenience, shipped as a VS Code extension.**
 
-<p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=Moayad.AutoSemi">
-    <img src="https://img.shields.io/badge/VS%20Code-Extension-007ACC" alt="VS Code Extension">
-  </a>
-  <a href="https://github.com/MoayadAlshehry/AutoSemi/releases">
-    <img src="https://img.shields.io/badge/version-0.1.4-4DC71F" alt="Version 0.1.4">
-  </a>
-</p>
+AutoSemi adds a semicolon to a completed statement when you press Enter. It has **200+ installs** on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Moayad.AutoSemi) as of October 2026.
 
-## ✨ What Does It Do?
-
-AutoSemi automatically places semicolons at the end of your lines when you press Enter. No more forgetting semicolons or going back to add them!
-
-**Just type your code and press Enter → AutoSemi does the rest** 🎯
-
-## 🌟 Features
-
-- **Smart Detection**: Knows when to add semicolons and when to skip
-- **Multi-Language**: Works with JavaScript, TypeScript, Java, and more
-- **Fast & Light**: Doesn't slow down your editor
-- **Configurable**: Choose which languages to enable
-
-## 🚀 How to Use
-
-1. **Install** the extension from VS Code Marketplace
-2. **Start coding** as you normally would
-3. **Press Enter** after typing a line
-4. **Watch** as AutoSemi automatically adds the semicolon ✅
-
-That's it! No setup needed – it just works.
-
-## 📋 Supported Languages
-
-| Language | Status |
-|----------|---------|
-| Java | ✅ |
-| JavaScript | ✅ |
-| TypeScript | ✅ |
-| C# | ✅ |
-| C++ | ✅ |
-
-## ⚙️ Settings (Optional)
-
-You can customize AutoSemi in VS Code settings:
-
-- Turn it on/off for specific languages
-- Adjust how fast it responds
-- Choose to skip comments and strings
-
-## 🎯 Examples
-
-**Before pressing Enter:**
-```java
-  String name = "Moayad"
-  System.out.println("Hello: " + name)
+```javascript
+const project = "AutoSemi"  // Press Enter
+// becomes:
+const project = "AutoSemi";
 ```
 
-**After pressing Enter:**
-```java
-  String name = "Moayad";
-  System.out.println("Hello: " + name);
+## What it does
+
+- Completes supported statements in JavaScript, TypeScript and Java.
+- Keeps URL strings and comment text separate from executable code.
+- Inserts before a trailing comment rather than inside it.
+- Leaves multiline paste, replacements, undo/redo and multi-cursor changes untouched.
+- Cancels pending work when the document or configuration changes.
+
+This is a conservative, heuristic editing tool. It is not an AST parser, linter or formatter. Complex language constructs may be left unchanged; review edits as you would with any editor automation. JSX/TSX are not supported. C# and C++ rules are experimental and disabled by default.
+
+## Install
+
+Search for **AutoSemi** by **Moayad** in VS Code Extensions, or open the [Marketplace listing](https://marketplace.visualstudio.com/items?itemName=Moayad.AutoSemi). VS Code 1.103 or later is required.
+
+## Configure
+
+```json
+{
+  "autoSemi.enabled": true,
+  "autoSemi.languages": ["javascript", "typescript", "java"],
+  "autoSemi.skipComments": true,
+  "autoSemi.skipStrings": true,
+  "autoSemi.debounceDelay": 50,
+  "autoSemi.postEditDelay": 50
+}
 ```
 
-## 📦 Installation
+Each language also has an `autoSemi.enableFor…` switch. Enabling experimental C# or C++ requires both its switch and its language identifier (`csharp` or `cpp`) in `autoSemi.languages`. Delays are bounded to 0–500 ms. Rapid typing may cancel a pending insertion to avoid changing stale text.
 
-1. Open VS Code
-2. Press `Ctrl+P` (or `Cmd+P` on Mac)
-3. Type `ext install Moayad.AutoSemi`
-4. Press Enter and enjoy!
+## Development
 
-## 💖 Support
+```sh
+npm ci
+npm test
+npm run package
+```
 
-If you love AutoSemi, please:
-- ⭐ **Star** the repository on GitHub
-- 🐛 **Report** any issues you find
-- 💡 **Suggest** new features
+The tests cover lexical decisions and actual VS Code editor behavior. Linux CI runs the editor suite under Xvfb. Packaging produces a local `.vsix`; it does not publish to Marketplace. See [CHANGELOG.md](CHANGELOG.md) for unreleased changes. The Marketplace version remains unchanged until a separate release is published.
 
----
+## License
 
-<p align="center">
-  Made with ❤️ for developers who forget semicolons
-</p>
-
-<p align="center">
-  <sub>Because sometimes, the smallest things make the biggest difference</sub>
-</p>
+[MIT](LICENSE.md) · Built by [Moayad Alshehry](https://github.com/MoayadAlshehry).
