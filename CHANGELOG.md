@@ -1,9 +1,15 @@
-# Change Log
+# Changelog
 
-All notable changes to the "smart-semicolon" extension will be documented in this file.
+## Unreleased
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+- Separate lexical statement checks from VS Code event handling.
+- Handle quoted URLs, comments and incomplete multiline expressions conservatively.
+- Insert semicolons before trailing comments.
+- Ignore multiline paste, replacements, undo/redo and multi-cursor changes.
+- Cancel stale edits per document and expose the post-edit delay setting.
+- Add unit tests, editor integration tests, CI and packaging checks.
+- Remove unused parser dependencies and generated test files from source.
 
-## [Unreleased]
+## 0.1.4
 
-- Initial release
+- Previously published Marketplace version.
